@@ -38,7 +38,9 @@ class _HomePage extends StatefulWidget {
 
 class _HomePageState extends State<_HomePage>
     with SingleTickerProviderStateMixin {
+
   late TabController _tabController;
+  late TextEditingController _textController;
 
   String searchText = ''; // Variable para guardar el texto ingresado
   String locationMessage = ''; // Variable con ubicación o mensaje de error
@@ -90,12 +92,14 @@ class _HomePageState extends State<_HomePage>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this, initialIndex: 0);
+    _textController = TextEditingController(); // Inicializa el controlador del cuadro de textopara la ciudad
     _checkLocationPermission(); // Verifica los permisos al iniciar la app
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _textController.dispose(); // Libera el controlador del cuadro de texto teclear ciudad
     super.dispose();
   }
 
@@ -176,7 +180,7 @@ class _HomePageState extends State<_HomePage>
           image: AssetImage('assets/images/weather_background1.jpg'),
           fit: BoxFit.cover,
         ),
-				color: Colors.blue.withOpacity(0.1),
+        color: Colors.blue.withOpacity(0.1),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -191,7 +195,8 @@ class _HomePageState extends State<_HomePage>
             ),
             Expanded(
               child: TextField(
-//                controller: TextEditingController(text:),
+                controller: _textController,
+                cursorColor: Colors.white, // Cambia el color del cursor a blanco
                 decoration: const InputDecoration(
                   hintText: 'Search location',
                   hintStyle:
@@ -215,6 +220,7 @@ class _HomePageState extends State<_HomePage>
               ),
               onPressed: () {
                 // Cuando se presiona el botón de geolocalización
+                _textController.clear(); // Borra el cuadro de texto para teclear la ciudad
                 _checkLocationPermission();
               },
             ),
@@ -316,11 +322,12 @@ class _HomePageState extends State<_HomePage>
     return Column(children: [
       const SizedBox(height: 10.0),
       Text(
-          selectedCity/* +
+          selectedCity /* +
               commaSpace +
               latitudeGPS.toString() +
               commaSpace +
-              longitudeGPS.toString() + selectedAdmin*/,
+              longitudeGPS.toString() + selectedAdmin*/
+          ,
           style: const TextStyle(
               fontSize: 14, color: Color.fromRGBO(126, 229, 255, 1))),
       Text(
@@ -683,14 +690,17 @@ class _HomePageState extends State<_HomePage>
       List<Placemark> placemarks =
           await placemarkFromCoordinates(latitudeGPS, longitudeGPS);
       Placemark? firstValidPlacemark;
-    for (var placemark in placemarks) {
-			if (placemark.locality != null && placemark.locality != '' &&
-					placemark.administrativeArea != null && placemark.administrativeArea != '' &&
-					placemark.country != null && placemark.country != '') {
-				firstValidPlacemark = placemark;
-				break; // Salir del bucle en cuanto encontremos el primer placemark válido
-			}
-		}
+      for (var placemark in placemarks) {
+        if (placemark.locality != null &&
+            placemark.locality != '' &&
+            placemark.administrativeArea != null &&
+            placemark.administrativeArea != '' &&
+            placemark.country != null &&
+            placemark.country != '') {
+          firstValidPlacemark = placemark;
+          break; // Salir del bucle en cuanto encontremos el primer placemark válido
+        }
+      }
 //      firstValidPlacemark = null;
       if (firstValidPlacemark != null) {
         // Si encontramos un placemark válido, puedes acceder a los valores
@@ -701,13 +711,19 @@ class _HomePageState extends State<_HomePage>
       } else {
         // Recorre los placemarks para obtener el primer valor no nulo de cada campo
         for (var placemark in placemarks) {
-          if (selectedCity.isEmpty && placemark.locality != null && placemark.locality != '') {
+          if (selectedCity.isEmpty &&
+              placemark.locality != null &&
+              placemark.locality != '') {
             selectedCity = placemark.locality!;
           }
-          if (selectedAdmin1.isEmpty && placemark.administrativeArea != null && placemark.administrativeArea != '') {
+          if (selectedAdmin1.isEmpty &&
+              placemark.administrativeArea != null &&
+              placemark.administrativeArea != '') {
             selectedAdmin1 = placemark.administrativeArea!;
           }
-          if (selectedCountry.isEmpty && placemark.country != null && placemark.country != '') {
+          if (selectedCountry.isEmpty &&
+              placemark.country != null &&
+              placemark.country != '') {
             selectedCountry = placemark.country!;
           }
 
